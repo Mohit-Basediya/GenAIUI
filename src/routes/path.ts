@@ -1,7 +1,6 @@
 export const FrontendRoutes = {
     INDEX: "/",
-    Dashboard: "/dashboard",
-    FAQs: "/faqs",
-    Queries: "/client/query",
-    NotFound: "/*"
+    Home: "/Home",
+    Summary: "/Generate_Summary",
+    RagSummary: "/Rag_Summary",
 };

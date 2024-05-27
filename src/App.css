@@ -92,7 +92,7 @@ body {
 
 .app-content-wrppr {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   padding: 16px 16px 16px 30px;
 }
 
@@ -128,7 +128,7 @@ body {
 }
 
 .pg-gcd {
-  height: calc(100%);
+  height: 100%;
 }
 
 .pg-generate-contract-doc form {
@@ -220,7 +220,6 @@ body.document-uploaded .pg-generate-contract-doc .pg-gcd {
   height: calc(100% - 96px);
   padding-bottom: 5px;
 }
-
 
 .pg-generate-contract-doc .audio-processing-container {
   width: calc(100% - 2.6%);
@@ -1136,7 +1135,7 @@ textarea.form-control.prompt {
 }
 
 textarea.contract-textarea {
-  line-height: 34px;
+  line-height: 20px;
   resize: none;
 }
 
@@ -1288,7 +1287,7 @@ textarea.contract-textarea {
   position: absolute;
   width: 70%;
   z-index: 1;
-  max-height: 150px;
+  max-height: 100px;
   overflow-y: auto;
 }
 

@@ -1,49 +1,123 @@
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Footer from "./Footer";
 import SideBar from "./SideBar";
-import SelectDocument from "./SelectDocument";
-import ChatBox from "./ChatBox";
-import PromptBox from "./PromptBox";
-import ProgressBar from "./ProgressBar";
-import { useState } from "react";
+import SelectDocument from "./SummaryComponents/SelectDocument";
+import SelectDocument1 from "./ConversationAIComponent/SelectDocument1";
+import ChatBox from "./ConversationAIComponent/ChatBox";
+import PromptBox from "./ConversationAIComponent/PromptBox";
+import ProgressBar from "./ConversationAIComponent/ProgressBar";
 
+interface QuestionResult {
+  question: string;
+  result: {
+    result: string;
+    source: {
+      filename: string;
+      [key: string]: any;
+    }[];
+  };
+}
 
 const Home = () => {
+  const location = useLocation();
+  const [summary, setSummary] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [filename, setFilename] = useState("");
+  const [qaList, setQaList] = useState<QuestionResult[]>([]);
 
-  const [summary, setSummary] = useState(true)
+  useEffect(() => {
+    const checkToken = () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/";
+      }
+    };
+
+    checkToken();
+  }, []);
+
+  const updateSummary = (value: boolean) => {
+    setSummary(value);
+  };
+
+  const CallAPI = async (body: any, token: string) => {
+    console.log(body);
+      setFilename(body.metadata["filename"]);
+
+    const fetchUrl =
+      "https://inteligenius.azurewebsites.net/conversationalQA_UI";
+    try {
+      const response = await fetch(`${fetchUrl}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await response?.json();
+      console.log(data);
+      setQaList([...qaList, { question: body["query"], result: data }]);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error:", error);
+    }
+  };
 
   return (
     <div className="app-container">
+      {(location.pathname === "/Generate_Summary" ||
+        location.pathname === "/Rag_Summary") && <SelectDocument />}
 
-      {/*Navbar for different option show here */}
-      <SideBar />
+      {location.pathname === "/Home" && (
+        <div>
+          <SideBar />
 
-      <main className="app-content-wrppr" id="page-content">
-        <div className="pg-wrppr pg-generate-contract-doc">
-          <form id="textInputPrompt" action="/process_pdff" method="post" encType="multipart/form-data">
-            <div id="pgContentWrppr" className="pg-content-wrppr pg-gcd">
-             
-              {/*PDF file uploading progress and status to show here */}
-              <ProgressBar />
+          <main className="app-content-wrppr" id="page-content">
+            <div className="pg-wrppr pg-generate-contract-doc">
+              <form id="textInputPrompt">
+                <div id="pgContentWrppr" className="pg-content-wrppr pg-gcd">
+                  <ProgressBar
+                    visibility={summary ? "block" : "none"}
+                    updateSummary={updateSummary}
+                  />
 
-              {/*User and Prompt (Bot) response to show here */}
-              <ChatBox />
+                  <ChatBox
+                    visibility={summary ? "block" : "none"}
+                    qaList={qaList}
+                  />
 
-              {/*Welcome text and PDF file uplaod to show here */}
-              {!summary && (
-                <SelectDocument />
-              )}
-              {/* <SelectDocument /> */}
+                  {!summary && (
+                    <SelectDocument1
+                      updateSummary={updateSummary}
+                      callAPI={CallAPI}
+                      setLoading={setLoading}
+                    />
+                  )}
 
-              <div className="css-loader" id="loader"></div>
+                  {loading && (
+                    <div
+                      className="css-loader"
+                      id="loader"
+                      style={{ display: loading ? "block" : "none" }}
+                    ></div>
+                  )}
+                </div>
+
+                <PromptBox
+                  visibility={summary ? "block" : "none"}
+                  callAPI={CallAPI}
+                  setLoading={setLoading}
+                  filename={filename}
+                />
+              </form>
+              <Footer />
             </div>
-
-            {/*Prompt to insert text to show here */}
-            <PromptBox />
-          
-          </form>
-          <Footer />
+          </main>
         </div>
-      </main>
+      )}
     </div>
   );
 };
